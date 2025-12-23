@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Monitor V17.1</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; margin-bottom: 15px; border-radius: 10px; }
+        .stat-box { background: #252526; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .stat-val { font-size: 1.5rem; font-weight: bold; color: #4caf50; }
+        .stat-label { font-size: 0.9rem; color: #aaa; }
+        .device-name { color: #2196f3; font-weight: bold; font-size: 1.1rem; }
+        .vendor-badge { font-size: 0.75rem; background: #333; padding: 2px 6px; border-radius: 4px; color: #ff9800; margin-left: 5px; }
+        .speed-indicator { color: #f44336; font-weight: bold; }
+        
+        .app-row { font-size: 0.85rem; padding: 4px 0; display: flex; justify-content: space-between; color: #ffffff; }
+        .usage-text { color: #aaa; }
+        
+        /* 🔥 تعديل ألوان المعلومات الأساسية */
+        .device-meta { color: #bfbfbf; font-size: 0.85rem; margin-bottom: 10px; }
+        .device-meta i { color: #0dcaf0; width: 20px; text-align: center; }
+
+        .progress { height: 6px; background-color: #2c2c2c; border-radius: 3px; }
+        .progress-bar { background-color: #03a9f4; } 
+
+        .ip-changed { color: #f44336; font-size: 0.8rem; animation: blink 2s infinite; }
+        .sort-timer { font-size: 0.8rem; color: #777; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="row mb-4">
+            <div class="col-md-3"><div class="stat-box"><div class="stat-val" id="wan-total">0 MB</div><div class="stat-label">🌐 WAN (Internet)</div></div></div>
+            <div class="col-md-3"><div class="stat-box"><div class="stat-val text-warning" id="clients-net">0 MB</div><div class="stat-label">🔥 Clients (Net)</div></div></div>
+            <div class="col-md-3"><div class="stat-box"><div class="stat-val text-info" id="clients-loc">0 MB</div><div class="stat-label">🏠 Local (LAN)</div></div></div>
+            <div class="col-md-3"><div class="stat-box"><div class="stat-val text-primary" id="host-total">0 MB</div><div class="stat-label">💻 Laptop (Host)</div></div></div>
+        </div>
+        
+        <div class="d-flex justify-content-between mb-3 align-items-center">
+            <span class="text-muted"><i class="fas fa-clock"></i> Runtime: <span id="session-time">00:00:00</span></span>
+            <span class="sort-timer"><i class="fas fa-sort-amount-down"></i> Next Reorder in: <span id="sort-countdown" class="text-white">15:00</span></span>
+            <span class="text-success" id="connection-status">● Live</span>
+        </div>
+
+        <div class="row" id="devices-container"></div>
+    </div>
+
+    <script>
+        let cachedOrder = [];
+        let nextSortTime = 0;
+        const SORT_INTERVAL_MS = 15 * 60 * 1000;
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatSpeed(bps) {
+            if (bps < 1024) return bps.toFixed(0) + ' B/s';
+            if (bps < 1024*1024) return (bps/1024).toFixed(1) + ' KB/s';
+            return (bps/(1024*1024)).toFixed(1) + ' MB/s';
+        }
+
+        function formatTimeLeft(ms) {
+            if (ms < 0) return "00:00";
+            const totalSeconds = Math.floor(ms / 1000);
+            const m = Math.floor(totalSeconds / 60);
+            const s = totalSeconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        async function updateDashboard() {
+            try {
+                const response = await fetch('/data');
+                const data = await response.json();
+                
+                document.getElementById('wan-total').innerText = formatBytes(data.stats.wan);
+                document.getElementById('clients-net').innerText = formatBytes(data.stats.clients_net);
+                document.getElementById('clients-loc').innerText = formatBytes(data.stats.clients_loc);
+                document.getElementById('host-total').innerText = formatBytes(data.stats.host_usage);
+                document.getElementById('session-time').innerText = data.stats.runtime;
+
+                const now = Date.now();
+                if (now > nextSortTime || cachedOrder.length === 0) {
+                    data.devices.sort((a, b) => {
+                        if (a.is_host) return -1;
+                        if (b.is_host) return 1;
+                        return b.speed - a.speed;
+                    });
+                    cachedOrder = data.devices.map(d => d.mac);
+                    nextSortTime = now + SORT_INTERVAL_MS;
+                } else {
+                    data.devices.sort((a, b) => {
+                        let idxA = cachedOrder.indexOf(a.mac);
+                        let idxB = cachedOrder.indexOf(b.mac);
+                        if (idxA === -1) idxA = 9999;
+                        if (idxB === -1) idxB = 9999;
+                        return idxA - idxB;
+                    });
+                }
+
+                document.getElementById('sort-countdown').innerText = formatTimeLeft(nextSortTime - now);
+
+                const container = document.getElementById('devices-container');
+                container.innerHTML = ''; 
+
+                data.devices.forEach(dev => {
+                    const total = dev.total_net + dev.total_loc;
+                    let appsHtml = '';
+                    
+                    dev.apps.slice(0, 5).forEach(app => {
+                        const pct = total > 0 ? (app.usage / total * 100).toFixed(1) : 0;
+                        appsHtml += `
+                            <div class="app-row">
+                                <span>${app.name}</span>
+                                <span class="usage-text">${formatBytes(app.usage)} <span style="color:#666">(${pct}%)</span></span>
+                            </div>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" style="width: ${pct}%"></div>
+                            </div>
+                        `;
+                    });
+
+                    const speedClass = dev.speed > 1024*100 ? 'text-danger' : 'text-success';
+                    const ipAlert = dev.ip_log ? `<div class="ip-changed"><i class="fas fa-exclamation-triangle"></i> IP Changed: ${dev.ip_log}</div>` : '';
+
+                    const cardHtml = `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <span class="device-name">${dev.name}</span>
+                                            <span class="vendor-badge">${dev.vendor}</span>
+                                        </div>
+                                        <div class="${speedClass} fw-bold">
+                                            <i class="fas fa-tachometer-alt"></i> ${formatSpeed(dev.speed)}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="device-meta">
+                                        <div><i class="fas fa-network-wired"></i> IP: ${dev.ip}</div>
+                                        <div><i class="fas fa-globe"></i> Net: ${formatBytes(dev.total_net)} | <i class="fas fa-home"></i> Loc: ${formatBytes(dev.total_loc)}</div>
+                                        ${ipAlert}
+                                    </div>
+                                    <hr class="border-secondary">
+                                    <div class="mt-2">
+                                        ${appsHtml}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHtml;
+                });
+
+            } catch (error) {
+                document.getElementById('connection-status').innerText = '🔴 Disconnected';
+                document.getElementById('connection-status').className = 'text-danger';
+            }
+        }
+        setInterval(updateDashboard, 1000);
+        updateDashboard();
+    </script>
+</body>
+</html>
