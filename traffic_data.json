@@ -1,0 +1,131 @@
+{
+    "stats": {
+        "wan_total": 676823222,
+        "clients_internet": 577164682,
+        "clients_local": 184021,
+        "wan_apps": {
+            "Other/Web": 111392769,
+            "HTTPS (Web)": 217519032,
+            "Google": 41696982,
+            "Facebook": 176235,
+            "WhatsApp": 456769,
+            "Microsoft": 235687,
+            "YouTube": 1083528,
+            "TikTok": 3186066
+        },
+        "host_mac": "HOST_PC",
+        "start_time": 1766514084.9655998,
+        "last_save_date": "2025-12-23"
+    },
+    "devices": {
+        "HOST_PC": {
+            "IP": "192.168.1.9",
+            "Name": "MY LAPTOP",
+            "Vendor": "Host Device",
+            "Total_Internet": 99658540,
+            "Total_Local": 0,
+            "FirstSeen": 1766514088.3598206,
+            "LastSeen": 1766517263.3654304,
+            "Apps": {
+                "Google": 5720136,
+                "WhatsApp": 183469,
+                "Microsoft": 224377,
+                "YouTube": 5285
+            },
+            "IP_Log": null
+        },
+        "70:1f:3c:3b:83:23": {
+            "IP": "192.168.137.231",
+            "Name": "Tablet",
+            "Vendor": "Samsung",
+            "Total_Internet": 91047419,
+            "Total_Local": 8103,
+            "FirstSeen": 1766514088.9778724,
+            "LastSeen": 1766517263.172876,
+            "Apps": {
+                "Unknown": 54520044,
+                "LAN/Local": 8103,
+                "Google": 385716,
+                "YouTube": 69422,
+                "Other/Web": 364357,
+                "HTTPS (Web)": 35707880
+            },
+            "IP_Log": null
+        },
+        "00:28:f8:c6:ba:8d": {
+            "IP": "192.168.137.244",
+            "Name": "Laptop HP",
+            "Vendor": "Intel/HP",
+            "Total_Internet": 270393715,
+            "Total_Local": 161436,
+            "FirstSeen": 1766514089.619666,
+            "LastSeen": 1766517261.2659783,
+            "Apps": {
+                "LAN/Local": 161436,
+                "Unknown": 69033479,
+                "Google": 35232454,
+                "WhatsApp": 50676,
+                "Other/Web": 68899524,
+                "HTTPS (Web)": 96157451,
+                "YouTube": 1008821,
+                "Microsoft": 11310
+            },
+            "IP_Log": null
+        },
+        "9a:15:22:de:92:f9": {
+            "IP": "192.168.137.187",
+            "Name": "iPhone 13",
+            "Vendor": "Apple",
+            "Total_Internet": 101427194,
+            "Total_Local": 0,
+            "FirstSeen": 1766514094.3344164,
+            "LastSeen": 1766517006.5305746,
+            "Apps": {
+                "Unknown": 877469,
+                "Google": 92342,
+                "WhatsApp": 102904,
+                "Other/Web": 70140670,
+                "HTTPS (Web)": 30213809
+            },
+            "IP_Log": null
+        },
+        "12:0f:06:c3:2b:e6": {
+            "IP": "192.168.137.15",
+            "Name": "Device-2b:e6",
+            "Vendor": "Huawei",
+            "Total_Internet": 97398878,
+            "Total_Local": 14482,
+            "FirstSeen": 1766514131.533246,
+            "LastSeen": 1766517261.5883002,
+            "Apps": {
+                "Unknown": 7798974,
+                "LAN/Local": 14482,
+                "WhatsApp": 13486,
+                "Google": 203505,
+                "TikTok": 4054174,
+                "Apple": 14362,
+                "Other/Web": 3364916,
+                "HTTPS (Web)": 81773226,
+                "Facebook": 176235
+            },
+            "IP_Log": null
+        },
+        "8a:af:98:60:2d:ee": {
+            "IP": "192.168.137.251",
+            "Name": "iPhone 11",
+            "Vendor": "Apple",
+            "Total_Internet": 16897476,
+            "Total_Local": 0,
+            "FirstSeen": 1766514662.0301452,
+            "LastSeen": 1766517261.7178183,
+            "Apps": {
+                "Unknown": 210234,
+                "Google": 62829,
+                "WhatsApp": 106234,
+                "Other/Web": 5136632,
+                "HTTPS (Web)": 11381547
+            },
+            "IP_Log": null
+        }
+    }
+}
